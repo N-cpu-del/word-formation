@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Word Formation Activity</title>
+    <style>
+        /* Reset and Base Styles */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --bg-cream: #F6F1E7;
+            --header-beige: #E5DCCB;
+            --slash-beige: #DDD3C0;
+            --cell-hover: #EFE8D8;
+            --cell-active: #FFFFFF;
+            --border-dark: #2C2925;
+            --text-dark: #1E1C1A;
+            --text-muted: #6B655E;
+            --accent-blue: #2563EB;
+            --accent-green: #15803D;
+            --bg-green: #DCFCE7;
+            --accent-red: #B91C1C;
+            --bg-red: #FEE2E2;
+            --font-main: 'Georgia', 'Times New Roman', serif;
+            --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100dvh;
+            overflow: hidden;
+            background-color: var(--bg-cream);
+            color: var(--text-dark);
+            font-family: var(--font-main);
+            user-select: none;
+        }
+
+        /* Main Single-Screen Container (Optimized for Portrait Mobile & Desktop) */
+        #app-wrapper {
+            width: 100%;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            padding: 4px 6px;
+            max-width: 780px;
+            margin: 0 auto;
+        }
+
+
+        /* Top Control Bar */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 4px;
+            flex-shrink: 0;
+            font-family: var(--font-ui);
+            gap: 4px;
+        }
+
+        .title-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+        }
+
+        h1 {
+            font-family: var(--font-main);
+            font-size: clamp(0.85rem, 3.6vw, 1.25rem);
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            color: var(--text-dark);
+            white-space: nowrap;
+        }
+
+        .progress-badge {
+            background-color: var(--header-beige);
+            border: 1px solid var(--border-dark);
+            border-radius: 4px;
+            padding: 1px 5px;
+            font-size: clamp(0.65rem, 2.6vw, 0.8rem);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .controls-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+
+        .timer-box {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            background: #FFFFFF;
+            border: 1px solid var(--border-dark);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-variant-numeric: tabular-nums;
+            font-weight: 700;
+            font-size: clamp(0.75rem, 3.2vw, 1rem);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+        }
+
+        .btn {
+            cursor: pointer;
+            border: 1px solid var(--border-dark);
+            border-radius: 4px;
+            font-family: var(--font-ui);
+            font-weight: 700;
+            font-size: clamp(0.7rem, 2.9vw, 0.88rem);
+            padding: 3px 8px;
+            transition: transform 0.1s, background-color 0.15s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-start {
+            background-color: var(--accent-green);
+            color: #FFFFFF;
+            border-color: #0F5327;
+        }
+
+        .btn-start:hover {
+            background-color: #166534;
+        }
+
+        .btn-reset {
+            background-color: var(--header-beige);
+            color: var(--text-dark);
+        }
+
+        .btn-reset:hover {
+            background-color: #D6CBB6;
+        }
+
+        /* Table Container - Takes all remaining vertical height */
+        #table-container {
+            flex: 1;
+            min-height: 0;
+            width: 100%;
+            border: 1px solid var(--border-dark);
+            background-color: var(--bg-cream);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        }
+
+        table {
+            width: 100%;
+            height: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        thead {
+            background-color: var(--header-beige);
+            height: 6.2%;
+        }
+
+        tbody {
+            height: 93.8%;
+        }
+
+        tbody tr {
+            height: calc(100% / 13);
+        }
+
+        th, td {
+            border-bottom: 1px solid var(--border-dark);
+            text-align: center;
+            vertical-align: middle;
+            padding: 0 2px;
+            font-size: clamp(0.68rem, 3.1vw, 0.98rem);
+            line-height: 1.05;
+            overflow: hidden;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Proportioned column widths based on longest words per column:
+           No. (2 chars: "13") = 8%
+           Noun (longest: "imagination" / "brightness" / "depression" / "relaxation" = 11 chars) = 33%
+           Verb (longest: "energize" / "brighten" = 8 chars) = 26%
+           Adjective (longest: "imaginative" / "depressing" = 11 chars) = 33%
+        */
+        col.col-num  { width: 8%; }
+        col.col-noun { width: 33%; }
+        col.col-verb { width: 26%; }
+        col.col-adj  { width: 33%; }
+
+        th {
+            font-weight: 700;
+            color: var(--text-dark);
+            letter-spacing: 0.01em;
+            border-bottom: 1px solid var(--border-dark);
+            font-size: clamp(0.7rem, 3.1vw, 0.98rem);
+        }
+
+        th:not(:last-child), td:not(:last-child) {
+            border-right: 1px solid rgba(44, 41, 37, 0.35);
+        }
+
+        td.num-cell {
+            font-weight: 700;
+            background-color: rgba(229, 220, 203, 0.35);
+            font-family: var(--font-ui);
+            font-size: clamp(0.62rem, 2.7vw, 0.88rem);
+            padding: 0 1px;
+        }
+
+        /* Fixed text cells */
+        td.fixed-cell {
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        /* Unavailable slash cells */
+        td.slash-cell {
+            background-color: var(--slash-beige);
+            color: var(--text-muted);
+            font-weight: 700;
+            cursor: default;
+        }
+
+        /* Interactive empty cells */
+        td.interactive-cell {
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.15s;
+        }
+
+        body.game-locked td.interactive-cell {
+            cursor: not-allowed;
+        }
+
+        body.game-active td.interactive-cell:hover:not(.editing) {
+            background-color: var(--cell-hover);
+        }
+
+        td.interactive-cell.editing {
+            background-color: var(--cell-active);
+            padding: 1px 2px;
+        }
+
+        .placeholder-hint {
+            display: inline-block;
+            width: 68%;
+            height: 1px;
+            border-bottom: 1px dashed rgba(44, 41, 37, 0.4);
+            vertical-align: middle;
+        }
+
+        body.game-active td.interactive-cell:hover .placeholder-hint {
+            border-bottom-color: var(--accent-blue);
+        }
+
+        .saved-word {
+            font-weight: 700;
+            color: #1D4ED8;
+            font-family: var(--font-main);
+        }
+
+        /* Inline Input & Tick Button - Tight fit for portrait columns */
+        .inline-editor {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 92%;
+            gap: 2px;
+        }
+
+        .cell-input {
+            width: calc(100% - 24px);
+            min-width: 0;
+            height: 92%;
+            min-height: 20px;
+            border: 1.5px solid var(--accent-blue);
+            border-radius: 3px;
+            padding: 0 2px;
+            text-align: center;
+            font-family: var(--font-main);
+            font-size: clamp(0.68rem, 3vw, 0.95rem);
+            font-weight: 600;
+            color: var(--text-dark);
+            background: #FFFFFF;
+            outline: none;
+        }
+
+        .tick-btn {
+            width: 22px;
+            height: 92%;
+            min-height: 20px;
+            border: none;
+            border-radius: 3px;
+            background-color: var(--accent-green);
+            color: #FFFFFF;
+            font-weight: 900;
+            font-size: 0.78rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            padding: 0;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .tick-btn:hover {
+            background-color: #166534;
+        }
+
+        /* Grading / Feedback States */
+        td.result-correct {
+            background-color: var(--bg-green) !important;
+            color: var(--accent-green) !important;
+            font-weight: 700;
+            cursor: default !important;
+        }
+
+        td.result-incorrect {
+            background-color: var(--bg-red) !important;
+            color: var(--accent-red) !important;
+            cursor: default !important;
+            padding: 0 1px;
+        }
+
+        .correction-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.02;
+            max-width: 100%;
+        }
+
+        .wrong-text {
+            text-decoration: line-through;
+            opacity: 0.85;
+            font-weight: 500;
+            font-size: clamp(0.56rem, 2.3vw, 0.78rem);
+        }
+
+        .model-text {
+            color: var(--accent-green);
+            font-weight: 700;
+            font-size: clamp(0.58rem, 2.4vw, 0.82rem);
+            background: rgba(255, 255, 255, 0.82);
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        /* Toast Notification (Replaces alert) */
+        #toast-msg {
+            position: fixed;
+            top: 38px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-10px);
+            background-color: #1E1C1A;
+            color: #FFFFFF;
+            font-family: var(--font-ui);
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 5px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s, transform 0.2s;
+            z-index: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            white-space: nowrap;
+        }
+
+        #toast-msg.visible {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Bottom Results Summary Bar & Congratulatory Modal */
+        #bottom-summary {
+            display: none;
+            flex-shrink: 0;
+            margin-top: 4px;
+            background-color: var(--header-beige);
+            border: 1px solid var(--border-dark);
+            border-radius: 5px;
+            padding: 4px 6px;
+            font-family: var(--font-ui);
+            align-items: center;
+            justify-content: space-between;
+            gap: 4px;
+        }
+
+        #bottom-summary.visible {
+            display: flex;
+        }
+
+        .summary-stats {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 4px;
+            font-size: clamp(0.64rem, 2.5vw, 0.85rem);
+            font-weight: 600;
+        }
+
+        .stat-pill {
+            padding: 1px 5px;
+            border-radius: 3px;
+            background: rgba(255,255,255,0.75);
+            border: 1px solid rgba(44,41,37,0.25);
+        }
+
+        /* Results Overlay Card (Dismissible so students can inspect table) */
+        #results-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(30, 28, 26, 0.65);
+            z-index: 800;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            font-family: var(--font-ui);
+        }
+
+        #results-modal.visible {
+            display: flex;
+        }
+
+        .modal-card {
+            background-color: var(--bg-cream);
+            border: 2px solid var(--border-dark);
+            border-radius: 10px;
+            padding: 18px 16px;
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+        }
+
+        .modal-title {
+            font-family: var(--font-main);
+            font-size: clamp(1.1rem, 4.5vw, 1.5rem);
+            font-weight: 700;
+            color: var(--accent-green);
+            margin-bottom: 6px;
+        }
+
+        .modal-time {
+            font-size: clamp(0.95rem, 3.8vw, 1.25rem);
+            font-weight: 800;
+            background: #FFFFFF;
+            border: 1.5px solid var(--border-dark);
+            border-radius: 6px;
+            padding: 6px 10px;
+            display: inline-block;
+            margin: 6px 0;
+            color: var(--text-dark);
+        }
+
+        .modal-score {
+            font-size: clamp(0.9rem, 3.6vw, 1.15rem);
+            font-weight: 700;
+            margin: 6px 0;
+        }
+
+        .modal-breakdown {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            font-size: clamp(0.75rem, 3vw, 0.9rem);
+            margin: 8px 0;
+            color: var(--text-dark);
+        }
+
+        .modal-encourage {
+            font-size: clamp(0.78rem, 3.1vw, 0.92rem);
+            color: var(--text-muted);
+            margin-bottom: 14px;
+            font-style: italic;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body class="game-locked">
+
+    <!-- Non-blocking Toast Message -->
+    <div id="toast-msg">Click START to begin the activity!</div>
+
+    <!-- Main Single-Screen Application -->
+    <div id="app-wrapper">
+        <header>
+            <div class="title-group">
+                <h1>Word Formation</h1>
+                <span class="progress-badge" id="progress-counter">0 / 14</span>
+            </div>
+
+            <div class="controls-group">
+                <div class="timer-box" aria-label="Activity Timer">
+                    <span>⏱</span>
+                    <span id="timer-display">00:00</span>
+                </div>
+                <button type="button" class="btn btn-start" id="start-btn">START</button>
+                <button type="button" class="btn btn-reset" id="reset-btn" style="display: none;">RESET</button>
+            </div>
+        </header>
+
+        <div id="table-container">
+            <table aria-label="Word Formation Table">
+                <colgroup>
+                    <col class="col-num">
+                    <col class="col-noun">
+                    <col class="col-verb">
+                    <col class="col-adj">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>Noun</th>
+                        <th>Verb</th>
+                        <th>Adjective</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <!-- Rows populated dynamically from exact dataset -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Bottom Results Summary Bar (Visible after grading) -->
+        <div id="bottom-summary">
+            <div class="summary-stats" id="bottom-stats-text"></div>
+            <button type="button" class="btn btn-start" id="bottom-play-again">PLAY AGAIN</button>
+        </div>
+    </div>
+
+    <!-- Final Results Congratulatory Overlay -->
+    <div id="results-modal" role="dialog" aria-modal="true" aria-labelledby="modal-heading">
+        <div class="modal-card">
+            <div class="modal-title" id="modal-heading">Congratulations!</div>
+            <div class="modal-time" id="modal-time-text">You completed the activity in 00:00!</div>
+            <div class="modal-score" id="modal-score-text">Your score: 0/14 – 0%</div>
+            <div class="modal-breakdown" id="modal-breakdown-text"></div>
+            <div class="modal-encourage" id="modal-encourage-text"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-reset" id="review-table-btn">Review Answers</button>
+                <button type="button" class="btn btn-start" id="modal-play-again">PLAY AGAIN</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * Exact Worksheet Data & Answer Key
+         * Types:
+         * - 'fixed': Pre-filled non-editable word
+         * - 'slash': Unavailable cell marked with '/', shaded, non-interactive
+         * - 'empty': Interactive student cell with exact accepted answers and model display
+         */
+        const TABLE_DATA = [
+            {
+                no: 1,
+                noun: { type: 'fixed', text: 'colour' },
+                verb: { type: 'fixed', text: 'colour' },
+                adj:  { type: 'empty', accepted: ['colourful', 'colored', 'coloured', 'colorful'], model: 'colourful' }
+            },
+            {
+                no: 2,
+                noun: { type: 'empty', accepted: ['patience'], model: 'patience' },
+                verb: { type: 'slash' },
+                adj:  { type: 'fixed', text: 'patient' }
+            },
+            {
+                no: 3,
+                noun: { type: 'empty', accepted: ['imagination'], model: 'imagination' },
+                verb: { type: 'fixed', text: 'imagine' },
+                adj:  { type: 'empty', accepted: ['imaginative', 'imaginary'], model: 'imaginative / imaginary' }
+            },
+            {
+                no: 4,
+                noun: { type: 'fixed', text: 'crowd' },
+                verb: { type: 'fixed', text: 'crowd' },
+                adj:  { type: 'empty', accepted: ['crowded'], model: 'crowded' }
+            },
+            {
+                no: 5,
+                noun: { type: 'fixed', text: 'power' },
+                verb: { type: 'slash' },
+                adj:  { type: 'empty', accepted: ['powerful'], model: 'powerful' }
+            },
+            {
+                no: 6,
+                noun: { type: 'empty', accepted: ['beauty'], model: 'beauty' },
+                verb: { type: 'slash' },
+                adj:  { type: 'fixed', text: 'beautiful' }
+            },
+            {
+                no: 7,
+                noun: { type: 'empty', accepted: ['energy'], model: 'energy' },
+                verb: { type: 'fixed', text: 'energize' },
+                adj:  { type: 'fixed', text: 'energetic' }
+            },
+            {
+                no: 8,
+                noun: { type: 'fixed', text: 'wonder' },
+                verb: { type: 'slash' },
+                adj:  { type: 'empty', accepted: ['wonderful'], model: 'wonderful' }
+            },
+            {
+                no: 9,
+                noun: { type: 'fixed', text: 'brightness' },
+                verb: { type: 'fixed', text: 'brighten' },
+                adj:  { type: 'empty', accepted: ['bright'], model: 'bright' }
+            },
+            {
+                no: 10,
+                noun: { type: 'fixed', text: 'depression' },
+                verb: { type: 'fixed', text: 'depress' },
+                adj:  { type: 'empty', accepted: ['depressed', 'depressing'], model: 'depressed / depressing' }
+            },
+            {
+                no: 11,
+                noun: { type: 'fixed', text: 'sadness' },
+                verb: { type: 'fixed', text: 'sadden' },
+                adj:  { type: 'empty', accepted: ['sad'], model: 'sad' }
+            },
+            {
+                no: 12,
+                noun: { type: 'fixed', text: 'peace' },
+                verb: { type: 'slash' },
+                adj:  { type: 'empty', accepted: ['peaceful'], model: 'peaceful' }
+            },
+            {
+                no: 13,
+                noun: { type: 'fixed', text: 'relaxation' },
+                verb: { type: 'fixed', text: 'relax' },
+                adj:  { type: 'empty', accepted: ['relaxed', 'relaxing'], model: 'relaxed / relaxing' }
+            }
+        ];
+
+        // Game State
+        let gameState = 'IDLE'; // 'IDLE' | 'PLAYING' | 'FINISHED'
+        let startTime = null;
+        let elapsedSeconds = 0;
+        let timerInterval = null;
+        let studentAnswers = {}; // Key: "rowNo-colKey", Value: saved string
+        let activeCellId = null;
+        let toastTimeout = null;
+
+        // Calculate total empty cells dynamically (14)
+        const TOTAL_QUESTIONS = TABLE_DATA.reduce((sum, row) => {
+            return sum + ['noun', 'verb', 'adj'].filter(col => row[col].type === 'empty').length;
+        }, 0);
+
+        // DOM References
+        const tableBody = document.getElementById('table-body');
+        const timerDisplay = document.getElementById('timer-display');
+        const progressCounter = document.getElementById('progress-counter');
+        const startBtn = document.getElementById('start-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const toastMsg = document.getElementById('toast-msg');
+        const bottomSummary = document.getElementById('bottom-summary');
+        const bottomStatsText = document.getElementById('bottom-stats-text');
+        const resultsModal = document.getElementById('results-modal');
+
+        /**
+         * Show a brief non-blocking notification message
+         */
+        function showToast(message) {
+            toastMsg.textContent = message;
+            toastMsg.classList.add('visible');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toastMsg.classList.remove('visible');
+            }, 2200);
+        }
+
+        /**
+         * Format seconds into MM:SS
+         */
+        function formatTime(totalSecs) {
+            const mins = Math.floor(totalSecs / 60);
+            const secs = totalSecs % 60;
+            return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        /**
+         * Render the 13-row table faithfully
+         */
+        function renderTable() {
+            tableBody.innerHTML = '';
+
+            TABLE_DATA.forEach(row => {
+                const tr = document.createElement('tr');
+
+                // Row Number Cell
+                const tdNum = document.createElement('td');
+                tdNum.className = 'num-cell';
+                tdNum.textContent = row.no;
+                tr.appendChild(tdNum);
+
+                // Noun, Verb, Adjective Columns
+                ['noun', 'verb', 'adj'].forEach(colKey => {
+                    const cellData = row[colKey];
+                    const td = document.createElement('td');
+
+                    if (cellData.type === 'fixed') {
+                        td.className = 'fixed-cell';
+                        td.textContent = cellData.text;
+                    } else if (cellData.type === 'slash') {
+                        td.className = 'slash-cell';
+                        td.textContent = '/';
+                        td.setAttribute('aria-label', 'Not required');
+                    } else if (cellData.type === 'empty') {
+                        const cellId = `${row.no}-${colKey}`;
+                        td.className = 'interactive-cell';
+                        td.dataset.cellId = cellId;
+                        td.setAttribute('role', 'button');
+                        td.setAttribute('tabindex', '0');
+
+                        renderInteractiveCellContent(td, cellId);
+
+                        td.addEventListener('click', (e) => {
+                            if (e.target.closest('.inline-editor')) return;
+                            handleCellClick(td, cellId);
+                        });
+
+                        td.addEventListener('keydown', (e) => {
+                            if (e.key === 'Enter' && !td.classList.contains('editing')) {
+                                handleCellClick(td, cellId);
+                            }
+                        });
+                    }
+
+                    tr.appendChild(td);
+                });
+
+                tableBody.appendChild(tr);
+            });
+
+            updateProgressCounter();
+        }
+
+        /**
+         * Render saved text or blank placeholder inside an interactive cell
+         */
+        function renderInteractiveCellContent(td, cellId) {
+            td.classList.remove('editing');
+            const savedVal = studentAnswers[cellId];
+            if (savedVal) {
+                td.innerHTML = `<span class="saved-word">${escapeHtml(savedVal)}</span>`;
+            } else {
+                td.innerHTML = `<span class="placeholder-hint" aria-hidden="true"></span>`;
+            }
+        }
+
+        /**
+         * Handle clicking on an interactive empty or completed cell
+         */
+        function handleCellClick(td, cellId) {
+            if (gameState === 'IDLE') {
+                showToast('Please click START first to begin the timer!');
+                return;
+            }
+            if (gameState !== 'PLAYING') return;
+
+            // If another cell is currently open for editing, save/close it first if non-empty
+            if (activeCellId && activeCellId !== cellId) {
+                const prevTd = document.querySelector(`td[data-cell-id="${activeCellId}"]`);
+                if (prevTd) {
+                    const prevInput = prevTd.querySelector('.cell-input');
+                    if (prevInput) {
+                        commitCellAnswer(prevTd, activeCellId, prevInput.value);
+                    }
+                }
+            }
+
+            if (td.classList.contains('editing')) return;
+
+            activeCellId = cellId;
+            td.classList.add('editing');
+            const existingValue = studentAnswers[cellId] || '';
+
+            td.innerHTML = `
+                <div class="inline-editor">
+                    <input type="text" class="cell-input" value="${escapeHtml(existingValue)}" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" aria-label="Type your answer">
+                    <button type="button" class="tick-btn" title="Save answer" aria-label="Save answer">✓</button>
+                </div>
+            `;
+
+            const input = td.querySelector('.cell-input');
+            const tickBtn = td.querySelector('.tick-btn');
+
+            // Focus and move cursor to end
+            input.focus();
+            input.setSelectionRange(input.value.length, input.value.length);
+
+            // Save on tick button click
+            tickBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                commitCellAnswer(td, cellId, input.value);
+            });
+
+            // Save on Enter key
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    commitCellAnswer(td, cellId, input.value);
+                } else if (e.key === 'Escape') {
+                    activeCellId = null;
+                    renderInteractiveCellContent(td, cellId);
+                }
+            });
+        }
+
+        /**
+         * Save a student's typed answer into the cell
+         */
+        function commitCellAnswer(td, cellId, rawValue) {
+            const cleaned = rawValue.trim();
+            activeCellId = null;
+
+            if (cleaned.length > 0) {
+                studentAnswers[cellId] = cleaned;
+            } else {
+                delete studentAnswers[cellId];
+            }
+
+            renderInteractiveCellContent(td, cellId);
+            updateProgressCounter();
+
+            // Check if all 14 required empty cells are completed and saved
+            if (Object.keys(studentAnswers).length === TOTAL_QUESTIONS) {
+                finishAndGradeActivity();
+            }
+        }
+
+        /**
+         * Update the "0 / 14" counter
+         */
+        function updateProgressCounter() {
+            const completedCount = Object.keys(studentAnswers).length;
+            progressCounter.textContent = `${completedCount} / ${TOTAL_QUESTIONS}`;
+        }
+
+        /**
+         * Start the classroom timer and unlock the table
+         */
+        function startGame() {
+            if (gameState === 'PLAYING') return;
+
+            gameState = 'PLAYING';
+            document.body.classList.remove('game-locked');
+            document.body.classList.add('game-active');
+
+            startBtn.style.display = 'none';
+            resetBtn.style.display = 'inline-flex';
+
+            startTime = Date.now();
+            elapsedSeconds = 0;
+            timerDisplay.textContent = '00:00';
+
+            timerInterval = setInterval(() => {
+                elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+                timerDisplay.textContent = formatTime(elapsedSeconds);
+            }, 250);
+        }
+
+        /**
+         * Stop timer, grade all 14 answers, highlight cells, and show results
+         */
+        function finishAndGradeActivity() {
+            gameState = 'FINISHED';
+            clearInterval(timerInterval);
+            document.body.classList.remove('game-active');
+            document.body.classList.add('game-locked');
+
+            const finalTimeFormatted = formatTime(elapsedSeconds);
+            timerDisplay.textContent = finalTimeFormatted;
+
+            let correctCount = 0;
+            let incorrectCount = 0;
+
+            TABLE_DATA.forEach(row => {
+                ['noun', 'verb', 'adj'].forEach(colKey => {
+                    const cellData = row[colKey];
+                    if (cellData.type !== 'empty') return;
+
+                    const cellId = `${row.no}-${colKey}`;
+                    const td = document.querySelector(`td[data-cell-id="${cellId}"]`);
+                    const userRaw = studentAnswers[cellId] || '';
+                    const userNormalized = userRaw.trim().toLowerCase().replace(/\s+/g, ' ');
+
+                    const isCorrect = cellData.accepted.some(
+                        validAns => validAns.toLowerCase() === userNormalized
+                    );
+
+                    td.classList.remove('editing');
+                    td.removeAttribute('role');
+                    td.removeAttribute('tabindex');
+
+                    if (isCorrect) {
+                        correctCount++;
+                        td.classList.add('result-correct');
+                        td.innerHTML = `<span>${escapeHtml(userRaw)} ✓</span>`;
+                    } else {
+                        incorrectCount++;
+                        td.classList.add('result-incorrect');
+                        td.innerHTML = `
+                            <span class="correction-display">
+                                <span class="wrong-text">${escapeHtml(userRaw)}</span>
+                                <span class="model-text">${escapeHtml(cellData.model)}</span>
+                            </span>
+                        `;
+                    }
+                });
+            });
+
+            const percentage = Math.round((correctCount / TOTAL_QUESTIONS) * 100);
+
+            // Populate bottom summary bar
+            bottomStatsText.innerHTML = `
+                <span class="stat-pill"><strong>Your score: ${correctCount}/${TOTAL_QUESTIONS} – ${percentage}%</strong></span>
+                <span class="stat-pill" style="color: var(--accent-green);">Correct: ${correctCount}</span>
+                <span class="stat-pill" style="color: var(--accent-red);">Incorrect: ${incorrectCount}</span>
+                <span class="stat-pill">Time: ${finalTimeFormatted}</span>
+            `;
+            bottomSummary.classList.add('visible');
+
+            // Populate and display congratulatory results modal
+            document.getElementById('modal-time-text').textContent =
+                `Congratulations! You completed the activity in ${finalTimeFormatted}!`;
+            document.getElementById('modal-score-text').textContent =
+                `Your score: ${correctCount}/${TOTAL_QUESTIONS} – ${percentage}%`;
+            document.getElementById('modal-breakdown-text').innerHTML = `
+                <span><strong>Correct:</strong> ${correctCount}</span>
+                <span>•</span>
+                <span><strong>Incorrect:</strong> ${incorrectCount}</span>
+                <span>•</span>
+                <span><strong>Total Questions:</strong> ${TOTAL_QUESTIONS}</span>
+            `;
+
+            let encouragement = 'Great effort! Review the highlighted corrections in the table to master every word form.';
+            if (percentage === 100) {
+                encouragement = 'Outstanding! You mastered every single noun, verb, and adjective form!';
+            } else if (percentage >= 80) {
+                encouragement = 'Excellent work! You have a strong command of English word formation!';
+            } else if (percentage >= 60) {
+                encouragement = 'Well done! Check the green model answers in the table to sharpen the remaining words.';
+            }
+
+            document.getElementById('modal-encourage-text').textContent = encouragement;
+            resultsModal.classList.add('visible');
+        }
+
+        /**
+         * Reset everything to initial state for a new attempt
+         */
+        function resetGame() {
+            clearInterval(timerInterval);
+            gameState = 'IDLE';
+            startTime = null;
+            elapsedSeconds = 0;
+            studentAnswers = {};
+            activeCellId = null;
+
+            document.body.classList.remove('game-active');
+            document.body.classList.add('game-locked');
+
+            timerDisplay.textContent = '00:00';
+            startBtn.style.display = 'inline-flex';
+            resetBtn.style.display = 'none';
+            bottomSummary.classList.remove('visible');
+            resultsModal.classList.remove('visible');
+
+            renderTable();
+        }
+
+        /**
+         * Escape HTML special characters safely
+         */
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // Event Listeners
+        startBtn.addEventListener('click', startGame);
+        resetBtn.addEventListener('click', resetGame);
+        document.getElementById('bottom-play-again').addEventListener('click', resetGame);
+        document.getElementById('modal-play-again').addEventListener('click', resetGame);
+        document.getElementById('review-table-btn').addEventListener('click', () => {
+            resultsModal.classList.remove('visible');
+        });
+
+        // Initialize table on load
+        window.addEventListener('DOMContentLoaded', renderTable);
+    </script>
+</body>
+</html>
